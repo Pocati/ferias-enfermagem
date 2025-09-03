@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Férias - Enfermagem</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1 style="color:#fff">Gestão de Férias - Enfermagem</h1>
+            <div class="search-container">
+                <div class="search-bar">
+                    <input type="text" id="searchInput" placeholder="Buscar funcionário...">
+                    <button id="searchButton"><i class="fas fa-search"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <section id="alertSection" class="alert hidden">
+            <h3 id="alertMessage"></h3>
+        </section>
+
+        <main class="main-layout">
+            <div class="left-panel">
+                <div class="card">
+                    <h2>Cadastrar Funcionário</h2>
+                    <form id="employeeForm">
+                        <div class="form-group">
+                            <label for="name">Nome:</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">Função:</label>
+                            <select id="role" required>
+                                <option value="Técnico em Enfermagem">Técnico em Enfermagem</option>
+                                <option value="Enfermeiro">Enfermeiro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ward">Enfermaria:</label>
+                            <select id="ward" required>
+                                <option value="M.A">M.A</option>
+                                <option value="LII">LII</option>
+                                <option value="LI">LI</option>
+                                <option value="CCP">CCP</option>
+                                <option value="CSO">CSO</option>
+                                <option value="UCI">UCI</option>
+                                <option value="A.T">A.T</option>
+                                <option value="Ambulatório">Ambulatório</option>
+                                <option value="Curativo">Curativo</option>
+                                <option value="SCIH">SCIH</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="shift">Turno:</label>
+                            <select id="shift" required>
+                                <option value="Manhã">Manhã</option>
+                                <option value="Tarde">Tarde</option>
+                                <option value="Noite">Noite</option>
+                            </select>
+                        </div>
+                        <button type="submit">Adicionar Funcionário</button>
+                    </form>
+                    <div id="searchResults" class="card search-results"></div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="vacation-section">
+                    <div class="vacation-card">
+                        <h3 class="toggle-header">Férias do Mês Atual <button class="toggle-btn"><i
+                                    class="fas fa-chevron-up"></i></button></h3>
+                        <div id="currentVacations" class="vacation-list"></div>
+                    </div>
+                    <div class="vacation-card">
+                        <h3 class="toggle-header">Férias do Próximo Mês <button class="toggle-btn"><i
+                                    class="fas fa-chevron-up"></i></button></h3>
+                        <div id="nextVacations" class="vacation-list"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <section class="board-section">
+            <!-- NAVBAR DE ENFERMARIAS (AGORA VISÍVEL) -->
+            <div id="wardsNavbar" class="wards-navbar"></div>
+            <div id="shiftFilter" class="shift-filter"></div>
+            <div id="employeesBoard" class="employees-board"></div>
+        </section>
+    </div>
+
+    <div id="vacationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Registrar Férias</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="vacationForm">
+                <input type="hidden" id="vacationEmployeeId">
+                <div class="form-group">
+                    <label for="vacationStart">Início das Férias:</label>
+                    <input type="date" id="vacationStart" required>
+                </div>
+                <div class="form-group">
+                    <label for="vacationDays">Dias de Férias:</label>
+                    <input type="number" id="vacationDays" min="1" max="30" value="30" required>
+                </div>
+                <div class="form-group">
+                    <label for="vacationEnd">Término das Férias:</label>
+                    <input type="date" id="vacationEnd" readonly>
+                </div>
+                <button type="submit">Salvar Férias</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="moveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Mover Funcionário</h2>
+                <span class="close">&times;</span>
+            </div>
+            <form id="moveForm">
+                <input type="hidden" id="moveEmployeeId">
+                <div class="form-group">
+                    <label for="moveWard">Nova Enfermaria:</label>
+                    <select id="moveWard" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="moveShift">Novo Turno:</label>
+                    <select id="moveShift" required></select>
+                </div>
+                <button type="submit">Mover</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content confirmation-modal">
+            <div class="modal-header">
+                <h2>Confirmação</h2>
+                <span class="close">&times;</span>
+            </div>
+            <p id="confirmationMessage"></p>
+            <div class="confirmation-buttons">
+                <button id="confirmYes" class="yes-btn">Sim</button>
+                <button id="confirmNo" class="no-btn">Não</button>
+            </div>
+        </div>
+    </div>
+    <!-- Scripts do Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ================== CONFIGURAÇÃO DO FIREBASE ==================
+        // ⚠️ SUBSTITUA ESTAS CONFIGURAÇÕES COM AS DO SEU PROJETO FIREBASE
+        const firebaseConfig = {
+            apiKey: "SUA_API_KEY_AQUI",
+            authDomain: "seu-projeto.firebaseapp.com",
+            projectId: "seu-projeto-id",
+            storageBucket: "seu-projeto.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "seu-app-id-aqui"
+        };
+
+        // Inicializar Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        console.log("Firebase inicializado com sucesso!");
+
+        // ================== AGORA USE O DB PARA SALVAR/CARREGAR DADOS ==================
+        // Exemplo de como salvar um funcionário:
+        async function salvarFuncionario(funcionario) {
+            try {
+                const docRef = await db.collection('funcionarios').add(funcionario);
+                console.log("Funcionário salvo com ID: ", docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error("Erro ao salvar funcionário: ", error);
+                // Fallback para localStorage se necessário
+                return salvarLocalmente(funcionario);
+            }
+        }
+
+        // Exemplo de como carregar funcionários:
+        async function carregarFuncionarios() {
+            try {
+                const snapshot = await db.collection('funcionarios').get();
+                const funcionarios = [];
+                snapshot.forEach(doc => {
+                    funcionarios.push({ id: doc.id, ...doc.data() });
+                });
+                return funcionarios;
+            } catch (error) {
+                console.error("Erro ao carregar funcionários: ", error);
+                // Fallback para localStorage se necessário
+                return carregarLocalmente();
+            }
+        }
+    </script>
+    <script src="main.js"></script>
+</body>
+
+</html>
