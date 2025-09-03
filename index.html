@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestão de Enfermagem</title>
+    <title>Gestão de Férias - Enfermagem</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         :root {
@@ -18,6 +18,7 @@
             --warning: #ff8f00;
             --gray: #f5f5f5;
             --text: #212121;
+            --vacation: #e8f5e9;
         }
 
         * {
@@ -31,6 +32,9 @@
             background-color: #fafafa;
             color: var(--text);
             line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
         .container {
@@ -38,6 +42,7 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+            flex: 1;
         }
 
         header {
@@ -52,9 +57,14 @@
             align-items: center;
         }
 
+        h1 {
+            color: white !important;
+        }
+
         .search-container {
             display: flex;
             align-items: center;
+            position: relative;
         }
 
         .search-bar {
@@ -79,19 +89,37 @@
             cursor: pointer;
         }
 
+        .search-results-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            margin-top: 5px;
+            width: 100%;
+        }
+
+        .search-result-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-result-item:hover {
+            background-color: #f5f5f5;
+        }
+
         .card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
             padding: 20px;
             margin-bottom: 20px;
-        }
-
-        h1,
-        h2,
-        h3 {
-            margin-bottom: 15px;
-            color: var(--dark);
         }
 
         .form-group {
@@ -102,7 +130,6 @@
             display: block;
             margin-bottom: 5px;
             font-weight: 600;
-            color: var(--dark);
         }
 
         input,
@@ -129,7 +156,7 @@
             background-color: var(--secondary);
         }
 
-        /* Navbar de enfermarias - ESTILO CORRIGIDO */
+        /* Navbar de enfermarias */
         .wards-navbar {
             display: flex;
             overflow-x: auto;
@@ -138,8 +165,6 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
             padding: 10px;
-            min-height: 60px;
-            /* Altura mínima garantida */
         }
 
         .ward-tab {
@@ -149,13 +174,6 @@
             cursor: pointer;
             margin-right: 10px;
             white-space: nowrap;
-            transition: all 0.3s;
-            flex-shrink: 0;
-            /* Impede que encolham */
-        }
-
-        .ward-tab:hover {
-            background-color: #ffa4a2;
         }
 
         .ward-tab.active {
@@ -175,11 +193,6 @@
             background-color: var(--light);
             border-radius: 6px;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .shift-tab:hover {
-            background-color: #ffa4a2;
         }
 
         .shift-tab.active {
@@ -213,14 +226,15 @@
             justify-content: space-between;
             align-items: center;
             cursor: pointer;
+            user-select: none;
         }
 
-        .toggle-btn {
-            background: none;
-            border: none;
-            color: var(--dark);
-            font-size: 16px;
-            cursor: pointer;
+        .toggle-content {
+            margin-top: 10px;
+        }
+
+        .toggle-content.hidden {
+            display: none;
         }
 
         .vacation-list {
@@ -230,12 +244,6 @@
         .vacation-item {
             padding: 10px;
             border-bottom: 1px solid #eee;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .vacation-item:last-child {
-            border-bottom: none;
         }
 
         /* Quadro de funcionários */
@@ -262,11 +270,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            cursor: move;
         }
 
-        .employee-item:hover {
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+        .employee-item.on-vacation {
+            background-color: var(--vacation);
+            border-left: 4px solid var(--success);
         }
 
         .employee-name {
@@ -276,7 +284,6 @@
         .employee-role {
             font-size: 12px;
             color: #777;
-            margin-top: 2px;
         }
 
         .employee-actions {
@@ -288,33 +295,18 @@
             background-color: transparent;
             color: var(--danger);
             padding: 5px;
-            font-size: 18px;
-        }
-
-        button.delete-btn:hover {
-            background-color: transparent;
-            color: #c0392b;
         }
 
         button.edit-btn {
             background-color: transparent;
             color: var(--secondary);
             padding: 5px;
-            font-size: 18px;
-            margin-right: 5px;
-        }
-
-        button.edit-btn:hover {
-            background-color: transparent;
-            color: #2980b9;
         }
 
         button.move-btn {
             background-color: transparent;
             color: var(--primary);
             padding: 5px;
-            font-size: 18px;
-            margin-right: 5px;
         }
 
         .alert {
@@ -323,23 +315,27 @@
             border-radius: 4px;
             background-color: #fff4e6;
             border-left: 4px solid var(--warning);
-            color: #d35400;
+            position: relative;
         }
 
-        .alert h3 {
-            color: #d35400;
-            margin-top: 0;
-        }
-
-        .hidden {
+        .alert.hidden {
             display: none;
+        }
+
+        .alert-toggle {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
         }
 
         .empty-state {
             text-align: center;
             padding: 20px;
             color: #757575;
-            font-style: italic;
         }
 
         .requirements {
@@ -368,7 +364,6 @@
             border-radius: 8px;
             width: 90%;
             max-width: 500px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
         .modal-header {
@@ -381,30 +376,14 @@
         .close {
             font-size: 24px;
             cursor: pointer;
-            color: #7f8c8d;
         }
 
-        .confirmation-modal {
+        footer {
+            background: linear-gradient(135deg, var(--primary), var(--dark));
+            color: white;
             text-align: center;
-        }
-
-        .confirmation-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .yes-btn {
-            background-color: var(--success);
-        }
-
-        .no-btn {
-            background-color: var(--danger);
-        }
-
-        .search-results {
-            margin-top: 20px;
+            padding: 15px;
+            margin-top: 30px;
         }
 
         @media (max-width: 768px) {
@@ -431,16 +410,20 @@
 <body>
     <div class="container">
         <header>
-            <h1 style="color:#fff">Gestão de Enfermagem</h1>
+            <h1>Gestão de Férias - Enfermagem</h1>
             <div class="search-container">
                 <div class="search-bar">
-                    <input type="text" id="searchInput" placeholder="Buscar funcionário...">
+                    <input type="text" id="searchInput" placeholder="Buscar funcionário..." autocomplete="off">
                     <button id="searchButton"><i class="fas fa-search"></i></button>
                 </div>
+                <div id="searchResultsContainer" class="search-results-container hidden"></div>
             </div>
         </header>
 
         <section id="alertSection" class="alert hidden">
+            <button class="alert-toggle" onclick="toggleAlert()">
+                <i class="fas fa-times"></i>
+            </button>
             <h3 id="alertMessage"></h3>
         </section>
 
@@ -483,36 +466,39 @@
                                 <option value="Noite">Noite</option>
                             </select>
                         </div>
-                        <button type="submit">Adicionar Funcionário</button>
+                        <button type="submit" id="submitButton">Adicionar Funcionário</button>
                     </form>
-                    <div id="searchResults" class="card search-results"></div>
                 </div>
             </div>
 
             <div class="right-panel">
                 <div class="vacation-section">
                     <div class="vacation-card">
-                        <h3 class="toggle-header">Férias do Mês Atual <button class="toggle-btn"><i
-                                    class="fas fa-chevron-up"></i></button></h3>
-                        <div id="currentVacations" class="vacation-list"></div>
+                        <div class="toggle-header" onclick="toggleSection('currentVacations')">
+                            <h3>Férias do Mês Atual</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div id="currentVacations" class="toggle-content"></div>
                     </div>
                     <div class="vacation-card">
-                        <h3 class="toggle-header">Férias do Próximo Mês <button class="toggle-btn"><i
-                                    class="fas fa-chevron-up"></i></button></h3>
-                        <div id="nextVacations" class="vacation-list"></div>
+                        <div class="toggle-header" onclick="toggleSection('nextVacations')">
+                            <h3>Próximas Férias</h3>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div id="nextVacations" class="toggle-content"></div>
                     </div>
                 </div>
             </div>
         </main>
 
         <section class="board-section">
-            <!-- NAVBAR DE ENFERMARIAS (AGORA VISÍVEL) -->
             <div id="wardsNavbar" class="wards-navbar"></div>
             <div id="shiftFilter" class="shift-filter"></div>
             <div id="employeesBoard" class="employees-board"></div>
         </section>
     </div>
 
+    <!-- Modal de Férias -->
     <div id="vacationModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -538,46 +524,32 @@
         </div>
     </div>
 
-    <div id="moveModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Mover Funcionário</h2>
-                <span class="close">&times;</span>
-            </div>
-            <form id="moveForm">
-                <input type="hidden" id="moveEmployeeId">
-                <div class="form-group">
-                    <label for="moveWard">Nova Enfermaria:</label>
-                    <select id="moveWard" required></select>
-                </div>
-                <div class="form-group">
-                    <label for="moveShift">Novo Turno:</label>
-                    <select id="moveShift" required></select>
-                </div>
-                <button type="submit">Mover</button>
-            </form>
-        </div>
-    </div>
-
+    <!-- Modal de Confirmação -->
     <div id="confirmationModal" class="modal">
-        <div class="modal-content confirmation-modal">
+        <div class="modal-content">
             <div class="modal-header">
                 <h2>Confirmação</h2>
                 <span class="close">&times;</span>
             </div>
             <p id="confirmationMessage"></p>
             <div class="confirmation-buttons">
-                <button id="confirmYes" class="yes-btn">Sim</button>
-                <button id="confirmNo" class="no-btn">Não</button>
+                <button id="confirmYes">Sim</button>
+                <button id="confirmNo">Não</button>
             </div>
         </div>
     </div>
+
+    <footer>
+        Criado e desenvolvido por Hipócrates Matheus
+    </footer>
+
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
     <script>
         // ================== CONFIGURAÇÃO DO FIREBASE ==================
-        // ⚠️ SUBSTITUA COM SUAS CREDENCIAIS REAIS!
+        // ⚠️ SUBSTITUA COM SUAS CREDENCIAIS REAIS DO FIREBASE!
         const firebaseConfig = {
             apiKey: "AIzaSyDd1lBoSFXMCYnV6PiP_v51StGUZgD-eMw",
             authDomain: "ferias-enfermagem.firebaseapp.com",
@@ -587,852 +559,489 @@
             appId: "1:265712802426:web:4b1f39a4568d7a911e39c3"
         };
 
-
         // Inicializar Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // ================== VARIÁVEIS GLOBAIS ==================
+        let employees = [];
+        let vacations = [];
+        let selectedWard = null;
+        let selectedShift = null;
+
         // ================== FUNÇÕES DO FIREBASE ==================
-        async function salvarFuncionario(funcionario) {
+        async function saveEmployee(employee) {
             try {
-                const docRef = await db.collection('funcionarios').add(funcionario);
-                console.log("Funcionário salvo no Firebase com ID: ", docRef.id);
-                return docRef.id;
+                // Verificar se nome já existe
+                const nomeExistente = employees.find(emp =>
+                    emp.name.toLowerCase() === employee.name.toLowerCase() && emp.id !== employee.id
+                );
+
+                if (nomeExistente) {
+                    throw new Error("Já existe um funcionário com este nome!");
+                }
+
+                if (employee.id && employee.id.startsWith('firebase_')) {
+                    // Atualizar funcionário existente
+                    const firebaseId = employee.id.replace('firebase_', '');
+                    await db.collection('employees').doc(firebaseId).set(employee);
+                    return employee.id;
+                } else {
+                    // Criar novo funcionário
+                    const docRef = await db.collection('employees').add(employee);
+                    return 'firebase_' + docRef.id;
+                }
             } catch (error) {
-                console.error("Erro ao salvar no Firebase: ", error);
-                // Fallback para localStorage
-                return salvarLocalmente(funcionario);
+                console.error("Erro ao salvar no Firebase:", error);
+                throw error;
             }
         }
 
-        async function carregarFuncionarios() {
+        async function loadEmployees() {
             try {
-                const snapshot = await db.collection('funcionarios').get();
-                const funcionarios = [];
+                const snapshot = await db.collection('employees').get();
+                employees = [];
                 snapshot.forEach(doc => {
-                    funcionarios.push({ id: doc.id, ...doc.data() });
+                    employees.push({ id: 'firebase_' + doc.id, ...doc.data() });
                 });
-                return funcionarios;
+                return employees;
             } catch (error) {
-                console.error("Erro ao carregar do Firebase: ", error);
-                // Fallback para localStorage
-                return carregarLocalmente();
+                console.error("Erro ao carregar funcionários:", error);
+                return [];
             }
         }
 
-        // Funções similares para férias...
-        async function salvarFerias(ferias) {
+        async function saveVacation(vacation) {
             try {
-                const docRef = await db.collection('ferias').add(ferias);
-                return docRef.id;
+                if (vacation.id && vacation.id.startsWith('firebase_')) {
+                    const firebaseId = vacation.id.replace('firebase_', '');
+                    await db.collection('vacations').doc(firebaseId).set(vacation);
+                    return vacation.id;
+                } else {
+                    const docRef = await db.collection('vacations').add(vacation);
+                    return 'firebase_' + docRef.id;
+                }
             } catch (error) {
-                console.error("Erro ao salvar férias: ", error);
-                return salvarFeriasLocalmente(ferias);
+                console.error("Erro ao salvar férias:", error);
+                throw error;
             }
         }
 
-        // ================== FALLBACK LOCALSTORAGE ==================
-        function salvarLocalmente(funcionario) {
-            const funcionarios = JSON.parse(localStorage.getItem('funcionarios')) || [];
-            funcionario.id = 'local_' + Date.now();
-            funcionarios.push(funcionario);
-            localStorage.setItem('funcionarios', JSON.stringify(funcionarios));
-            return funcionario.id;
+        async function loadVacations() {
+            try {
+                const snapshot = await db.collection('vacations').get();
+                vacations = [];
+                snapshot.forEach(doc => {
+                    vacations.push({ id: 'firebase_' + doc.id, ...doc.data() });
+                });
+                return vacations;
+            } catch (error) {
+                console.error("Erro ao carregar férias:", error);
+                return [];
+            }
         }
 
-        function carregarLocalmente() {
-            return JSON.parse(localStorage.getItem('funcionarios')) || [];
+        // ================== FUNÇÕES DE UI/UX ==================
+        function toggleSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const icon = section.previousElementSibling.querySelector('i');
+
+            section.classList.toggle('hidden');
+            icon.classList.toggle('fa-chevron-down');
+            icon.classList.toggle('fa-chevron-up');
         }
 
-        // ================== INICIALIZAÇÃO ==================
-        document.addEventListener('DOMContentLoaded', async function () {
-            console.log("Firebase inicializado com sucesso!");
-
-            // Carrega dados do Firebase (ou localStorage)
-            const funcionarios = await carregarFuncionarios();
-            console.log("Funcionários carregados:", funcionarios);
-
-        });
-    </script>
-    <script>
-        // Simulação de banco de dados usando localStorage
-        const DB_KEYS = {
-            EMPLOYEES: 'nursing_employees',
-            VACATIONS: 'nursing_vacations'
-        };
-
-        document.addEventListener('DOMContentLoaded', function () {
-            // Referências aos elementos do DOM
-            const employeeForm = document.getElementById('employeeForm');
-            const searchInput = document.getElementById('searchInput');
-            const searchButton = document.getElementById('searchButton');
-            const searchResults = document.getElementById('searchResults');
+        function toggleAlert() {
             const alertSection = document.getElementById('alertSection');
-            const alertMessage = document.getElementById('alertMessage');
-            const wardsNavbar = document.getElementById('wardsNavbar');
-            const shiftFilter = document.getElementById('shiftFilter');
-            const employeesBoard = document.getElementById('employeesBoard');
-            const currentVacations = document.getElementById('currentVacations');
-            const nextVacations = document.getElementById('nextVacations');
-            const vacationModal = document.getElementById('vacationModal');
-            const vacationForm = document.getElementById('vacationForm');
-            const vacationEnd = document.getElementById('vacationEnd');
-            const closeModal = document.querySelectorAll('.close');
-            const confirmationModal = document.getElementById('confirmationModal');
-            const confirmationMessage = document.getElementById('confirmationMessage');
-            const confirmYes = document.getElementById('confirmYes');
-            const confirmNo = document.getElementById('confirmNo');
-            const moveModal = document.getElementById('moveModal');
-            const moveForm = document.getElementById('moveForm');
-            const moveWardSelect = document.getElementById('moveWard');
-            const moveShiftSelect = document.getElementById('moveShift');
+            alertSection.classList.add('hidden');
+        }
 
-            // Lista de enfermarias com requisitos mínimos
-            const wards = [
-                { id: 'ma', name: 'M.A', requirements: { Manhã: 6, Tarde: 6, Noite: 8 }, nurses: 1 },
-                { id: 'lii', name: 'LII', requirements: { Manhã: 10, Tarde: 10, Noite: 12 }, nurses: 2 },
-                { id: 'li', name: 'LI', requirements: { Manhã: 5, Tarde: 5, Noite: 6 }, nurses: 1 },
-                { id: 'ccp', name: 'CCP', requirements: { Manhã: 10, Tarde: 10, Noite: 14 }, nurses: 2 },
-                { id: 'cso', name: 'CSO', requirements: { Manhã: 7, Tarde: 7, Noite: 10 }, nurses: 2 },
-                { id: 'uci', name: 'UCI', requirements: { Manhã: 5, Tarde: 5, Noite: 7 }, nurses: 1 },
-                { id: 'at', name: 'A.T', requirements: { Manhã: 1, Tarde: 1, Noite: 2 }, nurses: 1 },
-                { id: 'ambulatorio', name: 'Ambulatório', requirements: { Manhã: 9, Tarde: 4, Diurno: 6 }, nurses: 1 },
-                { id: 'curativo', name: 'Curativo', requirements: { Manhã: 2, Diurno: 1 }, nurses: 1 },
-                { id: 'scih', name: 'SCIH', requirements: { Manhã: { tecnico: 1, enfermeiro: 1 } }, nurses: 1 }
-            ];
+        // ================== FUNÇÕES PRINCIPAIS ==================
+        function initializeApp() {
+            setupEventListeners();
+            loadAllData();
+            renderWardsNavbar();
+            renderShiftFilter();
+        }
 
-            // Requisitos totais de enfermeiros por turno
-            const nursesRequirements = {
-                Manhã: 16,
-                Tarde: 16,
-                Noite: 13
-            };
+        async function loadAllData() {
+            employees = await loadEmployees();
+            vacations = await loadVacations();
+            renderEmployeesBoard();
+            renderVacationLists();
+            checkRequirements();
+        }
 
-            // Array para armazenar os funcionários
-            let employees = JSON.parse(localStorage.getItem(DB_KEYS.EMPLOYEES)) || [];
-            let vacations = JSON.parse(localStorage.getItem(DB_KEYS.VACATIONS)) || [];
+        function setupEventListeners() {
+            // Formulário de funcionário
+            document.getElementById('employeeForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                await addEmployee();
+            });
 
-            // Variáveis para controle de seleção
-            let selectedWard = null;
-            let selectedShift = null;
-            let draggedEmployee = null;
-            let pendingAction = null;
+            // Busca
+            document.getElementById('searchButton').addEventListener('click', searchEmployee);
+            document.getElementById('searchInput').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    searchEmployee();
+                }
+            });
 
-            // Inicializar a aplicação
-            function init() {
-                renderWardsNavbar();
-                renderShiftFilter();
+            // Cálculo automático de férias
+            document.getElementById('vacationStart').addEventListener('change', calculateVacationEnd);
+            document.getElementById('vacationDays').addEventListener('input', calculateVacationEnd);
+        }
+
+        async function addEmployee() {
+            const name = document.getElementById('name').value;
+            const role = document.getElementById('role').value;
+            const ward = document.getElementById('ward').value;
+            const shift = document.getElementById('shift').value;
+
+            // Mostrar loading no botão
+            const submitButton = document.getElementById('submitButton');
+            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cadastrando...';
+            submitButton.disabled = true;
+
+            try {
+                const newEmployee = { name, role, ward, shift };
+                const employeeId = await saveEmployee(newEmployee);
+
+                // Atualizar a lista
+                employees.push({ id: employeeId, ...newEmployee });
+
+                // Limpar apenas o campo do nome, manter os demais
+                document.getElementById('name').value = '';
+
                 renderEmployeesBoard();
-                renderVacationLists();
-                setupEventListeners();
                 checkRequirements();
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                // Restaurar botão
+                submitButton.innerHTML = 'Adicionar Funcionário';
+                submitButton.disabled = false;
+            }
+        }
+
+        function searchEmployee() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const resultsContainer = document.getElementById('searchResultsContainer');
+
+            if (!searchTerm) {
+                resultsContainer.classList.add('hidden');
+                return;
             }
 
-            function setupEventListeners() {
-                closeModal.forEach(closeBtn => {
-                    closeBtn.addEventListener('click', function () {
-                        vacationModal.style.display = 'none';
-                        confirmationModal.style.display = 'none';
-                        moveModal.style.display = 'none';
-                    });
-                });
+            const results = employees.filter(emp =>
+                emp.name.toLowerCase().includes(searchTerm)
+            );
 
-                // Fechar modal clicando fora dele
-                window.addEventListener('click', function (event) {
-                    if (event.target === vacationModal) {
-                        vacationModal.style.display = 'none';
-                    }
-                    if (event.target === confirmationModal) {
-                        confirmationModal.style.display = 'none';
-                        pendingAction = null;
-                    }
-                    if (event.target === moveModal) {
-                        moveModal.style.display = 'none';
-                    }
-                });
+            if (results.length === 0) {
+                resultsContainer.innerHTML = '<div class="search-result-item">Nenhum funcionário encontrado</div>';
+            } else {
+                resultsContainer.innerHTML = results.map(emp => `
+                    <div class="search-result-item" data-id="${emp.id}">
+                        <div>${emp.name}</div>
+                        <small>${emp.role} - ${emp.ward} (${emp.shift})</small>
+                    </div>
+                `).join('');
 
-                // Buscar funcionário
-                searchButton.addEventListener('click', searchEmployee);
-                searchInput.addEventListener('keyup', function (event) {
-                    if (event.key === 'Enter') {
-                        searchEmployee();
-                    }
-                });
-
-                // Calcular data de término das férias
-                document.getElementById('vacationStart').addEventListener('change', calculateVacationEnd);
-                document.getElementById('vacationDays').addEventListener('input', calculateVacationEnd);
-
-                // Formulários
-                employeeForm.addEventListener('submit', addEmployee);
-                vacationForm.addEventListener('submit', saveVacation);
-                moveForm.addEventListener('submit', confirmMoveEmployee);
-
-                // Confirmação de ações
-                confirmYes.addEventListener('click', executePendingAction);
-                confirmNo.addEventListener('click', function () {
-                    confirmationModal.style.display = 'none';
-                    pendingAction = null;
-                });
-
-                // Toggle dos quadros de férias
-                document.querySelectorAll('.toggle-header').forEach(header => {
-                    header.addEventListener('click', function () {
-                        const list = this.nextElementSibling;
-                        const icon = this.querySelector('i');
-                        list.classList.toggle('hidden');
-                        icon.classList.toggle('fa-chevron-up');
-                        icon.classList.toggle('fa-chevron-down');
-                    });
-                });
-            }
-
-            // Renderizar navbar de enfermarias
-            function renderWardsNavbar() {
-                wardsNavbar.innerHTML = '';
-
-                // Adicionar opção "Todas"
-                const allTab = document.createElement('div');
-                allTab.className = 'ward-tab active';
-                allTab.textContent = 'Todas as Enfermarias';
-                allTab.setAttribute('data-ward', 'all');
-                allTab.addEventListener('click', function () {
-                    selectWard('all');
-                });
-                wardsNavbar.appendChild(allTab);
-
-                // Adicionar enfermarias
-                wards.forEach(ward => {
-                    const tab = document.createElement('div');
-                    tab.className = 'ward-tab';
-                    tab.textContent = ward.name;
-                    tab.setAttribute('data-ward', ward.id);
-                    tab.addEventListener('click', function () {
-                        selectWard(ward.id);
-                    });
-                    wardsNavbar.appendChild(tab);
-                });
-
-                // Selecionar "Todas" por padrão
-                selectedWard = 'all';
-
-                // Preencher selects do formulário de cadastro e mover
-                const wardSelect = document.getElementById('ward');
-                const moveWardSelect = document.getElementById('moveWard');
-                wardSelect.innerHTML = '';
-                moveWardSelect.innerHTML = '';
-                wards.forEach(ward => {
-                    const option = document.createElement('option');
-                    option.value = ward.name;
-                    option.textContent = ward.name;
-                    wardSelect.appendChild(option);
-
-                    const moveOption = document.createElement('option');
-                    moveOption.value = ward.name;
-                    moveOption.textContent = ward.name;
-                    moveWardSelect.appendChild(moveOption);
-                });
-            }
-
-            // Renderizar filtro de turnos
-            function renderShiftFilter() {
-                shiftFilter.innerHTML = '';
-
-                const shifts = ['Manhã', 'Tarde', 'Noite'];
-
-                // Adicionar opção "Todos"
-                const allTab = document.createElement('div');
-                allTab.className = 'shift-tab active';
-                allTab.textContent = 'Todos os Turnos';
-                allTab.setAttribute('data-shift', 'all');
-                allTab.addEventListener('click', function () {
-                    selectShift('all');
-                });
-                shiftFilter.appendChild(allTab);
-
-                // Adicionar turnos
-                shifts.forEach(shift => {
-                    const tab = document.createElement('div');
-                    tab.className = 'shift-tab';
-                    tab.textContent = shift;
-                    tab.setAttribute('data-shift', shift);
-                    tab.addEventListener('click', function () {
-                        selectShift(shift);
-                    });
-                    shiftFilter.appendChild(tab);
-                });
-
-                // Selecionar "Todos" por padrão
-                selectedShift = 'all';
-
-                // Preencher selects de turno
-                const shiftSelect = document.getElementById('shift');
-                const moveShiftSelect = document.getElementById('moveShift');
-                shiftSelect.innerHTML = '';
-                moveShiftSelect.innerHTML = '';
-                shifts.forEach(shift => {
-                    const option = document.createElement('option');
-                    option.value = shift;
-                    option.textContent = shift;
-                    shiftSelect.appendChild(option);
-
-                    const moveOption = document.createElement('option');
-                    moveOption.value = shift;
-                    moveOption.textContent = shift;
-                    moveShiftSelect.appendChild(moveOption);
-                });
-            }
-
-            // Selecionar enfermaria
-            function selectWard(wardId) {
-                selectedWard = wardId;
-
-                // Atualizar UI
-                document.querySelectorAll('.ward-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelector(`.ward-tab[data-ward="${wardId}"]`).classList.add('active');
-
-                renderEmployeesBoard();
-            }
-
-            // Selecionar turno
-            function selectShift(shift) {
-                selectedShift = shift;
-
-                // Atualizar UI
-                document.querySelectorAll('.shift-tab').forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                document.querySelector(`.shift-tab[data-shift="${shift}"]`).classList.add('active');
-
-                renderEmployeesBoard();
-            }
-
-            // Renderizar quadro de funcionários
-            function renderEmployeesBoard() {
-                employeesBoard.innerHTML = '';
-
-                // Filtrar funcionários com base nas seleções
-                let filteredEmployees = employees;
-
-                if (selectedWard !== 'all') {
-                    const wardName = wards.find(w => w.id === selectedWard)?.name;
-                    filteredEmployees = filteredEmployees.filter(emp => emp.ward === wardName);
-                }
-
-                if (selectedShift !== 'all') {
-                    filteredEmployees = filteredEmployees.filter(emp => emp.shift === selectedShift);
-                }
-
-                // Agrupar por enfermaria e turno
-                const groupedEmployees = {};
-
-                filteredEmployees.forEach(emp => {
-                    const key = `${emp.ward}-${emp.shift}`;
-                    if (!groupedEmployees[key]) {
-                        groupedEmployees[key] = [];
-                    }
-                    groupedEmployees[key].push(emp);
-                });
-
-                // Renderizar grupos
-                for (const key in groupedEmployees) {
-                    const [wardName, shift] = key.split('-');
-                    const ward = wards.find(w => w.name === wardName);
-
-                    const groupElement = document.createElement('div');
-                    groupElement.className = 'employee-group';
-
-                    const title = document.createElement('h3');
-                    title.textContent = `${wardName} - ${shift}`;
-
-                    if (ward && ward.requirements[shift]) {
-                        const requirement = document.createElement('div');
-                        requirement.className = 'requirements';
-
-                        const reqValue = ward.requirements[shift];
-                        if (typeof reqValue === 'object') {
-                            requirement.textContent = `Mínimo: ${reqValue.tecnico} técnicos e ${reqValue.enfermeiro} enfermeiros`;
-                        } else {
-                            requirement.textContent = `Mínimo: ${reqValue} técnicos`;
+                // Adicionar event listeners para os resultados
+                resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', function () {
+                        const employeeId = this.getAttribute('data-id');
+                        const employee = employees.find(emp => emp.id === employeeId);
+                        if (employee) {
+                            selectWard(employee.ward);
+                            selectShift(employee.shift);
+                            resultsContainer.classList.add('hidden');
                         }
-                        title.appendChild(requirement);
-                    }
-
-                    const listElement = document.createElement('div');
-                    listElement.className = 'employee-list';
-                    listElement.setAttribute('data-ward', wardName);
-                    listElement.setAttribute('data-shift', shift);
-
-                    listElement.innerHTML = renderEmployeeList(groupedEmployees[key]);
-
-                    groupElement.appendChild(title);
-                    groupElement.appendChild(listElement);
-                    employeesBoard.appendChild(groupElement);
-                }
-
-                // Configurar funcionalidade de arrastar e soltar e os botões
-                setupDragAndDrop();
-                setupMoveButtons();
+                    });
+                });
             }
 
-            // Renderizar lista de funcionários
-            function renderEmployeeList(employees) {
-                if (employees.length === 0) {
-                    return '<div class="empty-state">Nenhum funcionário</div>';
-                }
+            resultsContainer.classList.remove('hidden');
+        }
 
-                return employees.map(employee => {
-                    const vacation = vacations.find(v => v.employeeId === employee.id);
-                    const vacationInfo = vacation ?
-                        `<br><small>Férias: ${formatDate(vacation.start)} - ${formatDate(vacation.end)}</small>` : '';
+        // ================== OUTRAS FUNÇÕES ==================
+        function calculateVacationEnd() {
+            const startDate = new Date(document.getElementById('vacationStart').value);
+            const days = parseInt(document.getElementById('vacationDays').value);
+
+            if (isNaN(startDate.getTime()) || isNaN(days)) {
+                document.getElementById('vacationEnd').value = '';
+                return;
+            }
+
+            const endDate = new Date(startDate);
+            endDate.setDate(endDate.getDate() + days);
+
+            document.getElementById('vacationEnd').value = endDate.toISOString().split('T')[0];
+        }
+
+        function isOnVacation(employeeId) {
+            const now = new Date();
+            const employeeVacation = vacations.find(v => v.employeeId === employeeId);
+
+            if (!employeeVacation) return false;
+
+            const startDate = new Date(employeeVacation.start);
+            const endDate = new Date(employeeVacation.end);
+
+            return now >= startDate && now <= endDate;
+        }
+
+        function renderVacationLists() {
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
+            const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
+
+            // Férias do mês atual (que começam no mês atual)
+            const currentVacations = vacations.filter(v => {
+                const startDate = new Date(v.start);
+                return startDate.getMonth() === currentMonth && startDate.getFullYear() === currentYear;
+            });
+
+            // Próximas férias (que começam no próximo mês)
+            const nextVacations = vacations.filter(v => {
+                const startDate = new Date(v.start);
+                return startDate.getMonth() === nextMonth && startDate.getFullYear() === nextYear;
+            });
+
+            // Renderizar férias atuais
+            const currentList = document.getElementById('currentVacations');
+            if (currentVacations.length === 0) {
+                currentList.innerHTML = '<div class="empty-state">Nenhuma férias este mês</div>';
+            } else {
+                currentList.innerHTML = currentVacations.map(v => {
+                    const employee = employees.find(emp => emp.id === v.employeeId);
+                    if (!employee) return '';
+
+                    const startDate = new Date(v.start).toLocaleDateString('pt-BR');
+                    const endDate = new Date(v.end).toLocaleDateString('pt-BR');
 
                     return `
-                        <div class="employee-item" draggable="true" data-id="${employee.id}">
+                        <div class="vacation-item">
+                            <div>${employee.name} (${employee.role})</div>
+                            <div>${employee.ward} - ${employee.shift}</div>
+                            <div>${startDate} - ${endDate}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Renderizar próximas férias
+            const nextList = document.getElementById('nextVacations');
+            if (nextVacations.length === 0) {
+                nextList.innerHTML = '<div class="empty-state">Nenhuma férias no próximo mês</div>';
+            } else {
+                nextList.innerHTML = nextVacations.map(v => {
+                    const employee = employees.find(emp => emp.id === v.employeeId);
+                    if (!employee) return '';
+
+                    const startDate = new Date(v.start).toLocaleDateString('pt-BR');
+                    const endDate = new Date(v.end).toLocaleDateString('pt-BR');
+
+                    return `
+                        <div class="vacation-item">
+                            <div>${employee.name} (${employee.role})</div>
+                            <div>${employee.ward} - ${employee.shift}</div>
+                            <div>${startDate} - ${endDate}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        // ================== FUNÇÕES DE RENDERIZAÇÃO ==================
+        function renderWardsNavbar() {
+            const wards = ['M.A', 'LII', 'LI', 'CCP', 'CSO', 'UCI', 'A.T', 'Ambulatório', 'Curativo', 'SCIH'];
+            const navbar = document.getElementById('wardsNavbar');
+
+            navbar.innerHTML = wards.map(ward => `
+                <div class="ward-tab" data-ward="${ward}">${ward}</div>
+            `).join('');
+
+            // Adicionar event listeners
+            navbar.querySelectorAll('.ward-tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    selectWard(this.getAttribute('data-ward'));
+                });
+            });
+        }
+
+        function renderShiftFilter() {
+            const shifts = ['Manhã', 'Tarde', 'Noite'];
+            const filter = document.getElementById('shiftFilter');
+
+            filter.innerHTML = shifts.map(shift => `
+                <div class="shift-tab" data-shift="${shift}">${shift}</div>
+            `).join('');
+
+            // Adicionar event listeners
+            filter.querySelectorAll('.shift-tab').forEach(tab => {
+                tab.addEventListener('click', function () {
+                    selectShift(this.getAttribute('data-shift'));
+                });
+            });
+        }
+
+        function selectWard(ward) {
+            selectedWard = ward;
+            document.querySelectorAll('.ward-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-ward') === ward);
+            });
+            renderEmployeesBoard();
+        }
+
+        function selectShift(shift) {
+            selectedShift = shift;
+            document.querySelectorAll('.shift-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.getAttribute('data-shift') === shift);
+            });
+            renderEmployeesBoard();
+        }
+
+        function renderEmployeesBoard() {
+            const board = document.getElementById('employeesBoard');
+            board.innerHTML = '';
+
+            // Agrupar funcionários por enfermaria e turno
+            const groupedEmployees = {};
+
+            employees.forEach(employee => {
+                if (selectedWard && employee.ward !== selectedWard) return;
+                if (selectedShift && employee.shift !== selectedShift) return;
+
+                const key = `${employee.ward}-${employee.shift}`;
+                if (!groupedEmployees[key]) {
+                    groupedEmployees[key] = [];
+                }
+                groupedEmployees[key].push(employee);
+            });
+
+            // Renderizar cada grupo
+            for (const [key, groupEmployees] of Object.entries(groupedEmployees)) {
+                const [ward, shift] = key.split('-');
+                const groupElement = document.createElement('div');
+                groupElement.className = 'employee-group';
+
+                const title = document.createElement('h3');
+                title.textContent = `${ward} - ${shift}`;
+
+                const listElement = document.createElement('div');
+                listElement.className = 'employee-list';
+
+                listElement.innerHTML = groupEmployees.map(employee => {
+                    const isVacation = isOnVacation(employee.id);
+
+                    return `
+                        <div class="employee-item ${isVacation ? 'on-vacation' : ''}" data-id="${employee.id}">
                             <div>
                                 <div class="employee-name">${employee.name}</div>
-                                <div class="employee-role">${employee.role}${vacationInfo}</div>
+                                <div class="employee-role">${employee.role}</div>
                             </div>
                             <div class="employee-actions">
-                                <button class="move-btn" onclick="openMoveModal('${employee.id}')" title="Mover para">
+                                <button class="move-btn" title="Mover" onclick="openMoveModal('${employee.id}')">
                                     <i class="fas fa-exchange"></i>
                                 </button>
-                                <button class="edit-btn" onclick="openVacationModal('${employee.id}')" title="Registrar Férias">
+                                <button class="edit-btn" title="Editar férias" onclick="openVacationModal('${employee.id}')">
                                     <i class="fas fa-umbrella-beach"></i>
                                 </button>
-                                <button class="delete-btn" onclick="confirmDeleteEmployee('${employee.id}')" title="Excluir">
+                                <button class="delete-btn" title="Excluir" onclick="confirmDeleteEmployee('${employee.id}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
                     `;
                 }).join('');
+
+                groupElement.appendChild(title);
+                groupElement.appendChild(listElement);
+                board.appendChild(groupElement);
             }
+        }
 
-            // Configurar arrastar e soltar
-            function setupDragAndDrop() {
-                const employeeItems = document.querySelectorAll('.employee-item');
-                const employeeLists = document.querySelectorAll('.employee-list');
-
-                employeeItems.forEach(item => {
-                    item.addEventListener('dragstart', handleDragStart);
-                    item.addEventListener('dragend', handleDragEnd);
-                });
-
-                employeeLists.forEach(list => {
-                    list.addEventListener('dragover', handleDragOver);
-                    list.addEventListener('dragenter', handleDragEnter);
-                    list.addEventListener('dragleave', handleDragLeave);
-                    list.addEventListener('drop', handleDrop);
-                });
-            }
-
-            // Configurar botões de "Mover para"
-            function setupMoveButtons() {
-                document.querySelectorAll('.move-btn').forEach(btn => {
-                    btn.addEventListener('click', function (e) {
-                        const employeeId = this.closest('.employee-item').getAttribute('data-id');
-                        openMoveModal(employeeId);
-                    });
-                });
-            }
-
-            // Handlers para arrastar e soltar
-            function handleDragStart(e) {
-                draggedEmployee = this;
-                this.classList.add('dragging');
-                e.dataTransfer.setData('text/plain', this.getAttribute('data-id'));
-            }
-
-            function handleDragEnd() {
-                this.classList.remove('dragging');
-                draggedEmployee = null;
-            }
-
-            function handleDragOver(e) {
-                e.preventDefault();
-            }
-
-            function handleDragEnter(e) {
-                e.preventDefault();
-                this.classList.add('highlight');
-            }
-
-            function handleDragLeave() {
-                this.classList.remove('highlight');
-            }
-
-            function handleDrop(e) {
-                e.preventDefault();
-                this.classList.remove('highlight');
-
-                const employeeId = e.dataTransfer.getData('text/plain');
-                const targetWard = this.getAttribute('data-ward');
-                const targetShift = this.getAttribute('data-shift');
-
-                const employee = employees.find(emp => emp.id === employeeId);
-                if (!employee) return;
-
-                if (employee.ward === targetWard && employee.shift === targetShift) {
-                    return; // Não fazer nada se for o mesmo local
-                }
-
-                // Pedir confirmação
-                showConfirmation(
-                    `Mover ${employee.name} de ${employee.ward} (${employee.shift}) para ${targetWard} (${targetShift})?`,
-                    () => moveEmployee(employeeId, targetWard, targetShift)
-                );
-            }
-
-            // Mover funcionário entre enfermarias/turnos
-            function moveEmployee(employeeId, newWard, newShift) {
-                const index = employees.findIndex(emp => emp.id === employeeId);
-                if (index === -1) return;
-
-                employees[index].ward = newWard;
-                employees[index].shift = newShift;
-
-                localStorage.setItem(DB_KEYS.EMPLOYEES, JSON.stringify(employees));
-                renderEmployeesBoard();
-                checkRequirements();
-            }
-
-            // Mostrar modal de confirmação
-            function showConfirmation(message, callback) {
-                confirmationMessage.textContent = message;
-                pendingAction = callback;
-                confirmationModal.style.display = 'flex';
-            }
-
-            // Executar ação pendente após confirmação
-            function executePendingAction() {
-                if (pendingAction) {
-                    pendingAction();
-                    pendingAction = null;
-                }
-                confirmationModal.style.display = 'none';
-            }
-
-            // Adicionar funcionário
-            function addEmployee(e) {
-                e.preventDefault();
-
-                const name = document.getElementById('name').value;
-                const role = document.getElementById('role').value;
-                const ward = document.getElementById('ward').value;
-                const shift = document.getElementById('shift').value;
-
-                const newEmployee = {
-                    id: generateId(),
-                    name,
-                    role,
-                    ward,
-                    shift
-                };
-
-                employees.push(newEmployee);
-                localStorage.setItem(DB_KEYS.EMPLOYEES, JSON.stringify(employees));
-
-                employeeForm.reset();
-                renderEmployeesBoard();
-                checkRequirements();
-            }
-
-            // Abrir modal de férias
-            window.openVacationModal = function (employeeId) {
-                const employee = employees.find(emp => emp.id === employeeId);
-                if (!employee) return;
-
-                document.getElementById('vacationEmployeeId').value = employeeId;
-                document.getElementById('vacationStart').value = '';
-                document.getElementById('vacationDays').value = '30';
-                document.getElementById('vacationEnd').value = '';
-
-                // Preencher data de início sugerida (15 dias a partir de hoje)
-                const suggestedStart = new Date();
-                suggestedStart.setDate(suggestedStart.getDate() + 15);
-                document.getElementById('vacationStart').value = suggestedStart.toISOString().split('T')[0];
-
-                // Calcular término automaticamente
-                calculateVacationEnd();
-
-                vacationModal.style.display = 'flex';
+        function checkRequirements() {
+            // Requisitos de enfermeiros
+            const nurseRequirements = {
+                'LII': 2, 'CCP': 2, 'CSO': 2,
+                'M.A': 1, 'LI': 1, 'UCI': 1, 'A.T': 1,
+                'Ambulatório': 1, 'Curativo': 1, 'SCIH': 1
             };
 
-            // Abrir modal de mover
-            window.openMoveModal = function (employeeId) {
-                const employee = employees.find(emp => emp.id === employeeId);
-                if (!employee) return;
-
-                document.getElementById('moveEmployeeId').value = employeeId;
-                moveModal.style.display = 'flex';
+            // Requisitos de técnicos
+            const techRequirements = {
+                'M.A': { 'Manhã': 6, 'Tarde': 6, 'Noite': 8 },
+                'LII': { 'Manhã': 10, 'Tarde': 10, 'Noite': 12 },
+                'LI': { 'Manhã': 5, 'Tarde': 5, 'Noite': 6 },
+                'CCP': { 'Manhã': 10, 'Tarde': 10, 'Noite': 14 },
+                'CSO': { 'Manhã': 7, 'Tarde': 7, 'Noite': 10 },
+                'UCI': { 'Manhã': 5, 'Tarde': 5, 'Noite': 7 },
+                'A.T': { 'Manhã': 1, 'Noite': 2 },
+                'Ambulatório': { 'Manhã': 9, 'Tarde': 4 },
+                'Curativo': { 'Manhã': 2 },
+                'SCIH': { 'Manhã': 1 }
             };
 
-            // Confirmar e mover funcionário via modal
-            function confirmMoveEmployee(e) {
-                e.preventDefault();
-                const employeeId = document.getElementById('moveEmployeeId').value;
-                const newWard = document.getElementById('moveWard').value;
-                const newShift = document.getElementById('moveShift').value;
+            let alerts = [];
 
-                const employee = employees.find(emp => emp.id === employeeId);
-                if (!employee) return;
-
-                moveModal.style.display = 'none';
-
-                showConfirmation(
-                    `Mover ${employee.name} de ${employee.ward} (${employee.shift}) para ${newWard} (${newShift})?`,
-                    () => moveEmployee(employeeId, newWard, newShift)
-                );
-            }
-
-            // Calcular data de término das férias (excluindo fins de semana)
-            function calculateVacationEnd() {
-                const startDate = new Date(document.getElementById('vacationStart').value);
-                const days = parseInt(document.getElementById('vacationDays').value);
-
-                if (isNaN(startDate.getTime()) || isNaN(days)) {
-                    document.getElementById('vacationEnd').value = '';
-                    return;
-                }
-
-                let endDate = new Date(startDate);
-                let addedDays = 0;
-
-                while (addedDays < days) {
-                    endDate.setDate(endDate.getDate() + 1);
-                    // Ignorar sábados e domingos
-                    if (endDate.getDay() !== 0 && endDate.getDay() !== 6) {
-                        addedDays++;
-                    }
-                }
-
-                document.getElementById('vacationEnd').value = endDate.toISOString().split('T')[0];
-            }
-
-            // Salvar férias
-            function saveVacation(e) {
-                e.preventDefault();
-
-                const employeeId = document.getElementById('vacationEmployeeId').value;
-                const startDate = document.getElementById('vacationStart').value;
-                const days = parseInt(document.getElementById('vacationDays').value);
-                const endDate = document.getElementById('vacationEnd').value;
-
-                // Verificar se já existem férias para este funcionário
-                const existingIndex = vacations.findIndex(v => v.employeeId === employeeId);
-
-                if (existingIndex !== -1) {
-                    vacations[existingIndex] = {
-                        employeeId,
-                        start: startDate,
-                        end: endDate,
-                        days
-                    };
-                } else {
-                    vacations.push({
-                        employeeId,
-                        start: startDate,
-                        end: endDate,
-                        days
-                    });
-                }
-
-                localStorage.setItem(DB_KEYS.VACATIONS, JSON.stringify(vacations));
-
-                vacationModal.style.display = 'none';
-                renderEmployeesBoard();
-                renderVacationLists();
-                checkRequirements();
-            }
-
-            // Confirmar exclusão de funcionário
-            window.confirmDeleteEmployee = function (employeeId) {
-                const employee = employees.find(emp => emp.id === employeeId);
-                if (!employee) return;
-
-                showConfirmation(
-                    `Excluir ${employee.name} (${employee.role}) permanentemente?`,
-                    () => deleteEmployee(employeeId)
-                );
-            };
-
-            // Excluir funcionário
-            function deleteEmployee(employeeId) {
-                employees = employees.filter(emp => emp.id !== employeeId);
-                vacations = vacations.filter(v => v.employeeId !== employeeId);
-
-                localStorage.setItem(DB_KEYS.EMPLOYEES, JSON.stringify(employees));
-                localStorage.setItem(DB_KEYS.VACATIONS, JSON.stringify(vacations));
-
-                renderEmployeesBoard();
-                renderVacationLists();
-                checkRequirements();
-            }
-
-            // Renderizar listas de férias
-            function renderVacationLists() {
-                const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
-
-                const nextMonth = currentMonth === 11 ? 0 : currentMonth + 1;
-                const nextYear = currentMonth === 11 ? currentYear + 1 : currentYear;
-
-                // Férias do mês atual
-                const currentVacationList = vacations.filter(v => {
-                    const start = new Date(v.start);
-                    const end = new Date(v.end);
-                    return (start.getMonth() === currentMonth && start.getFullYear() === currentYear) ||
-                        (end.getMonth() === currentMonth && end.getFullYear() === currentYear);
-                });
-
-                // Férias do próximo mês
-                const nextVacationList = vacations.filter(v => {
-                    const start = new Date(v.start);
-                    const end = new Date(v.end);
-                    return (start.getMonth() === nextMonth && start.getFullYear() === nextYear) ||
-                        (end.getMonth() === nextMonth && end.getFullYear() === nextYear);
-                });
-
-                // Renderizar férias atuais
-                if (currentVacationList.length === 0) {
-                    currentVacations.innerHTML = '<div class="empty-state">Nenhuma férias este mês</div>';
-                } else {
-                    currentVacations.innerHTML = currentVacationList.map(v => {
-                        const employee = employees.find(emp => emp.id === v.employeeId);
-                        if (!employee) return '';
-
-                        return `
-                            <div class="vacation-item">
-                                <div>${employee.name} (${employee.role})</div>
-                                <div>${employee.ward} - ${employee.shift}</div>
-                                <div>${formatDate(v.start)} - ${formatDate(v.end)}</div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                // Renderizar próximas férias
-                if (nextVacationList.length === 0) {
-                    nextVacations.innerHTML = '<div class="empty-state">Nenhuma férias no próximo mês</div>';
-                } else {
-                    nextVacations.innerHTML = nextVacationList.map(v => {
-                        const employee = employees.find(emp => emp.id === v.employeeId);
-                        if (!employee) return '';
-
-                        return `
-                            <div class="vacation-item">
-                                <div>${employee.name} (${employee.role})</div>
-                                <div>${employee.ward} - ${employee.shift}</div>
-                                <div>${formatDate(v.start)} - ${formatDate(v.end)}</div>
-                            </div>
-                        `;
-                    }).join('');
+            // Verificar enfermeiros
+            for (const [ward, minNurses] of Object.entries(nurseRequirements)) {
+                const nurses = employees.filter(emp => emp.ward === ward && emp.role === 'Enfermeiro');
+                if (nurses.length < minNurses) {
+                    alerts.push(`${ward}: ${nurses.length}/${minNurses} enfermeiros`);
                 }
             }
 
-            // Verificar requisitos mínimos
-            function checkRequirements() {
-                let alertMessages = [];
-
-                // Verificar requisitos por enfermaria e turno
-                wards.forEach(ward => {
-                    for (const shift in ward.requirements) {
-                        const reqValue = ward.requirements[shift];
-                        if (typeof reqValue === 'object') {
-                            // Caso especial para SCIH
-                            const tecnicos = employees.filter(emp => emp.ward === ward.name && emp.shift === shift && emp.role === 'Técnico em Enfermagem');
-                            const enfermeiros = employees.filter(emp => emp.ward === ward.name && emp.shift === shift && emp.role === 'Enfermeiro');
-                            if (tecnicos.length < reqValue.tecnico || enfermeiros.length < reqValue.enfermeiro) {
-                                alertMessages.push(`${ward.name} - ${shift}: Faltam ${reqValue.tecnico - tecnicos.length} técnicos e ${reqValue.enfermeiro - enfermeiros.length} enfermeiros.`);
-                            }
-                        } else {
-                            const employeesInShift = employees.filter(emp =>
-                                emp.ward === ward.name && emp.shift === shift && emp.role === 'Técnico em Enfermagem'
-                            );
-
-                            if (employeesInShift.length < reqValue) {
-                                alertMessages.push(`${ward.name} - ${shift}: ${employeesInShift.length}/${reqValue} técnicos`);
-                            }
-                        }
-                    }
-                });
-
-                // Verificar requisitos totais de enfermeiros
-                for (const shift in nursesRequirements) {
-                    const nursesInShift = employees.filter(emp =>
-                        emp.role === 'Enfermeiro' && emp.shift === shift
+            // Verificar técnicos por turno
+            for (const [ward, shifts] of Object.entries(techRequirements)) {
+                for (const [shift, minTechs] of Object.entries(shifts)) {
+                    const techs = employees.filter(emp =>
+                        emp.ward === ward && emp.shift === shift && emp.role === 'Técnico em Enfermagem'
                     );
-
-                    if (nursesInShift.length < nursesRequirements[shift]) {
-                        alertMessages.push(`Enfermeiros no turno ${shift}: ${nursesInShift.length}/${nursesRequirements[shift]}`);
+                    if (techs.length < minTechs) {
+                        alerts.push(`${ward} - ${shift}: ${techs.length}/${minTechs} técnicos`);
                     }
                 }
-
-                // Exibir alertas se houver problemas
-                if (alertMessages.length > 0) {
-                    alertMessage.innerHTML = `
-                        <strong>Escala incompleta:</strong><br>
-                        ${alertMessages.join('<br>')}
-                    `;
-                    alertSection.classList.remove('hidden');
-                } else {
-                    alertSection.classList.add('hidden');
-                }
             }
 
-            // Buscar funcionário
-            function searchEmployee() {
-                const searchTerm = searchInput.value.trim().toLowerCase();
-                if (searchTerm === '') {
-                    searchResults.innerHTML = '';
-                    return;
-                }
+            // Mostrar alertas se necessário
+            const alertSection = document.getElementById('alertSection');
+            const alertMessage = document.getElementById('alertMessage');
 
-                const results = employees.filter(emp =>
-                    emp.name.toLowerCase().includes(searchTerm)
-                );
-
-                if (results.length === 0) {
-                    searchResults.innerHTML = '<div class="empty-state">Nenhum funcionário encontrado</div>';
-                    return;
-                }
-
-                searchResults.innerHTML = `
-                    <h3>Resultados da busca:</h3>
-                    ${results.map(emp => {
-                    const vacation = vacations.find(v => v.employeeId === emp.id);
-                    const vacationInfo = vacation ?
-                        ` (Férias: ${formatDate(vacation.start)} - ${formatDate(vacation.end)})` : '';
-
-                    return `
-                            <div class="employee-item">
-                                <div>
-                                    <div class="employee-name">${emp.name}</div>
-                                    <div class="employee-role">${emp.role} - ${emp.ward} (${emp.shift})${vacationInfo}</div>
-                                </div>
-                            </div>
-                        `;
-                }).join('')}
-                `;
+            if (alerts.length > 0) {
+                alertMessage.innerHTML = `Requisitos mínimos não atendidos:<br>${alerts.join('<br>')}`;
+                alertSection.classList.remove('hidden');
+            } else {
+                alertSection.classList.add('hidden');
             }
+        }
 
-            // Funções utilitárias
-            function generateId() {
-                return Date.now().toString(36) + Math.random().toString(36).substr(2);
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                return date.toLocaleDateString('pt-BR');
-            }
-
-            // Inicializar a aplicação
-            init();
+        // ================== INICIALIZAÇÃO ==================
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeApp();
         });
+
+        // Funções para modais (para completar)
+        function openVacationModal(employeeId) {
+            // Implementar abertura do modal de férias
+            console.log("Abrir modal de férias para:", employeeId);
+        }
+
+        function openMoveModal(employeeId) {
+            // Implementar abertura do modal de mover
+            console.log("Abrir modal de mover para:", employeeId);
+        }
+
+        function confirmDeleteEmployee(employeeId) {
+            // Implementar confirmação de exclusão
+            console.log("Confirmar exclusão de:", employeeId);
+        }
     </script>
 </body>
 
